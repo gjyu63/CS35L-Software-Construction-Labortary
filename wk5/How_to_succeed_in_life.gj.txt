@@ -1,0 +1,44 @@
+To do this homework,
+we are going to start with the file on hw 4.
+challenges: sfrob -f; use system call rather than library function;
+
+for sfrob f, there are two parts: parse the flag, and implement the function
+
+what to start first??
+
+better parse the argument first, then use system calls for input, then implement the -f functionality. 
+
+how to test? 
+
+what did mihir do that is relevant?
+
+show how to deal with system call to read chars (better use anthony’s)
+
+all done above
+
+the next step is to write a shell script
+
+1. how to take a flag as argument
+2. how to use shell script to decode and compare
+
+the work flow of this shell script:
+to take argument, use condition statement
+if nothing, decode -> sort -> encode
+if -f, decode (wo/ case) -> sort -> encode
+
+decode & encode becomes tricky cuz the de/en-code regulations have altered. 
+
+we don’t have to do this. we can use sort -f
+
+
+
+notice that jerry’s sol used oct value of ascii
+
+also notice that we should consider the limit of toupper
+
+
+what’s next
+
+we are to 
+
+/usr/local/cs/jdk*/jre/lib/rt.jar

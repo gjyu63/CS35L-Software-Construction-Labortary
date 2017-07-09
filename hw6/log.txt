@@ -1,0 +1,60 @@
+Jiayu Guo
+
+1. Find path to sort
+$ which sort
+
+/usr/local/cs/bin/sort
+
+2. Check version of sort
+$ sort --version
+
+sort (GNU coreutils) 8.26
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Mike Haertel and Paul Eggert.
+
+It's written by our professor eggert. I'm very proud of him.
+
+
+3. Make a file with float numbers which size is 10M 
+
+$ od -An -t fF -N 40000000 < /dev/urandom | tr -s ' ' '\n' | sed '1d' > float.txt
+
+4. test benchmark by default
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk6/srt_gj]$ time -p sort -g float.txt > /dev/null
+real 22.52
+user 114.97
+sys 0.51
+
+b. 1 thread
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk6/srt_gj]$ time -p sort -g --parallel=1 float.txt > /dev/null
+real 105.95
+user 105.75
+sys 0.19
+
+c. 2 threads
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk6/srt_gj]$ time -p sort -g --parallel=2 float.txt > /dev/null
+real 54.60
+user 103.60
+sys 0.28
+
+
+d. 4 threads
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk6/srt_gj]$ time -p sort -g --parallel=4 float.txt >/dev/null
+real 32.11
+user 107.75
+sys 0.37
+
+e. 8 threads
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk6/srt_gj]$ time -p sort -g --parallel=8 float.txt >/dev/null
+real 20.76
+user 112.51
+sys 0.47
+
+using multithreading would significantly speed up the time of calculation.
+
+

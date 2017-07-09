@@ -1,0 +1,60 @@
+#!/bin/sh
+
+#grab everything inside <td> </td>
+
+grep "<td>.*</td>"|
+
+#remove html tags
+
+sed 's/<[^>]*>//g' |
+
+#remove white spaces
+
+sed '/^\s*$/d'|
+
+
+#select Hawaiian from the list
+awk 'NR % 2 == 0'|
+
+#remove blank lines
+
+sed '/^\n$/d'|
+
+#remove white spaces
+
+sed 's/^\s*//g'|
+
+#convert upper cases to lower
+
+tr '[:upper:]' '[:lower:]'|
+
+#convert ‘okina to apostrophe
+
+sed "s/\`/'/g"|
+
+#replace comma with \n
+
+sed 's/\,/\n/g'|
+
+#replace whitespace with \n
+
+tr ' ' '\n'|
+
+
+#remove blank lines at the beginning
+
+sed 's/^\s*//g'|
+
+#remove lines with undefined characters
+
+grep "^[pk\' mnwlhaeiou]\{1,\}$" |
+
+#sort and remove duplicates
+
+sort -u|
+
+#remove the first line,
+
+awk "NR != 1"
+
+ 

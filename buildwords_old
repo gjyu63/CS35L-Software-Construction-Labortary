@@ -1,0 +1,51 @@
+#!/bin/sh
+
+#have everything inside td
+
+grep “<td>/*</td>”|
+
+#remove html tags
+
+sed ’s/<[^>]*>//g’|
+
+#select Hawaiian from English-Hawaiian mix by select only even lines
+
+awk 'NR % 2 == 0'|
+
+#remove blank lines
+
+sed '/^\s*$/d'|
+
+#remove white spaces
+
+sed 's/^\s*//g'|
+
+#convert upper cases to lower
+
+tr '[:upper:]' '[:lower:]'|
+
+#convert ‘okina to apostrophe
+
+sed "s/\`/'/g"|
+
+#replace comma with new line character
+
+sed 's/\,/\n/g'|
+
+#replace whitespace with \n
+
+tr ' ' '\n'|
+
+
+#remove leading blank
+
+sed 's/^\s*//g'|
+
+#remove lines with undefined characters
+
+sed "/[^p^k^'^m^n^w^l^h^a^e^i^o^u]/d" |
+
+#sort and remove duplicates
+
+sort -u
+

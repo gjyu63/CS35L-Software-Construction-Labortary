@@ -1,0 +1,73 @@
+//Jiayu Guo 304773262
+
+1. Download and untar the tarball
+
+$ wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+$ tar -xzvf coreutils-7.6.tar.gz
+
+
+2. Compile and reproduce the problem:
+
+cd coreutils-7.6
+
+//configure the path
+
+./configure --prefix=/u/cs/ugrad/guoj/Desktop/cs35l/wk3/coreutils-7.6
+
+//compile the program
+./.
+$ make
+
+$ make install
+
+// export the locale:
+export LC_ALL='en_US.UTF-8'
+
+$ cd src
+
+//finally we reproduce the problem 
+
+To get a recent file example, use
+
+$ touch yes.o
+
+$ ./ls -l
+
+we get
+
+-rw-r--r-- 1 guoj csugrad  21907 2009-09-01 04:01 who.c
+-rw-r--r-- 1 guoj csugrad  73736 2017-01-28 19:10 who.o
+-rwxr-xr-x 1 guoj csugrad  90288 2017-01-28 19:10 yes
+-rw-r--r-- 1 guoj csugrad   2458 2009-09-01 04:01 yes.c
+-rw-r--r-- 1 guoj csugrad  18616 2017-01-28 19:10 yes.o
+
+
+definitely there is a bug in year format
+
+3. make patch file
+
+copy the patch to vim save as a_good_patch
+
+4. apply the patch file
+
+$ patch -p1 < a_good_patch
+
+5. Recompile the program
+
+$ make
+
+6. Check if it works right
+
+To get a recent file example, use
+
+$touch yes.o
+
+$ ./ls -l
+
+-rw-r--r-- 1 guoj csugrad  21907 Sep  1  2009 who.c
+-rw-r--r-- 1 guoj csugrad  73736 Jan 28 18:31 who.o
+-rwxr-xr-x 1 guoj csugrad  18616 Jan 28 18:32 yes.o
+
+compared to the ls before patch, we found that the newer 
+version behaves as expected

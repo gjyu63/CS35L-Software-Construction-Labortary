@@ -1,0 +1,5 @@
+to sort: sort -o [dest] [to be sorted]
+
+> : to recover
+
+>>: to append

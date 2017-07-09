@@ -1,0 +1,70 @@
+//Jiayu Guo 304773262
+
+Q1.
+
+He removed this line because it is a target of a goto statement. 
+Since that goto statement  has been removed, so the target label 
+can be also removed. It is not necessary tho, because leaving this label
+right there doesn’t hurt. 
+
+Q2.
+
+There are 2 major problems: If this program is transplanted to another country, 
+it might be not wise enough to use English-speaking format. 
+Also sticking to this specific format may “confuse” some other 
+programs that don’t have corresponding timing interfaces. 
+
+Q3. 
+
+$ ./readline.py -n 3 /dev/null
+
+we get 
+
+Traceback (most recent call last):
+  File "./readline.py", line 70, in <module>
+    main()
+  File "./readline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "./readline.py", line 34, in chooseline
+    return random.choice(self.lines)
+  File "/usr/lib64/python2.7/random.py", line 274,
+ in choice
+    return seq[int(self.random() * len(seq))]  
+# raises IndexError if seq is empty
+
+
+The dev/null is an empty file. When the script runs to
+return random.choice(self.lines),
+it will call random.choice in random.py. Since in random .py says raise 
+IndexError if seq is empty, so passing an empty file into it will 
+raise IndexError. 
+
+
+Q4.
+
+First, find where is python3
+
+$ whereis python3
+
+I put 
+
+/usr/local/cs/bin/python3
+
+after #!
+
+then ./readline.py
+
+I’ve got
+
+./readline.py
+  File "./readline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+I browsed relevant python webpages and it is said that python3 
+don’t have automatic tuple unpacking. Also, in 
+https://docs.python.org/3/library/exceptions.html#OSError 
+it says that  in latest python the IOError was merged to OSError,
+ which doesn’t take a tuple as an argument. A wise idea would be 
+passing a vale (or a list) into it instead of a tuple.

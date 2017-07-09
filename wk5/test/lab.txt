@@ -1,0 +1,114 @@
+1,2: I wrote b.c and u.c and used gcc -o to compile them to b (buffered) and u (unbuffered)
+
+I also used my favorite book critique of pure reason by immunel kant as the required large file input, it is 10M which is bigger than 5M. 
+
+To test the system calls of buffered, with file output:
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c ./b a b <kant.pdf>boutput.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 92.09    0.001223         612         2           read
+  2.64    0.000035           4         9           mmap
+  1.13    0.000015           4         4           mprotect
+  0.83    0.000011           3         4           fstat
+  0.75    0.000010          10         1           write
+  0.75    0.000010           5         2           open
+  0.60    0.000008           8         1           munmap
+  0.30    0.000004           2         2           close
+  0.30    0.000004           4         1         1 access
+  0.30    0.000004           4         1           execve
+  0.15    0.000002           2         1           brk
+  0.15    0.000002           2         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.001328                    29         1 total
+
+
+To test the system calls of unbuffered, with file output:
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c ./u a b <kant.pdf>uoutput.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.17   11.342835           1  10220085           write
+ 44.83    9.217943           1  10220087           read
+  0.00    0.000040           6         7           mmap
+  0.00    0.000025           6         4           mprotect
+  0.00    0.000013           7         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000008           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           3         2           close
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   20.560901              20440194         1 total
+
+To test the system calls of buffered, with terminal output:
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c ./b a b <kant.pdf
+        Ʉ?	d% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 30.23    0.000026           3         9           mmap
+ 18.60    0.000016           8         2           open
+ 13.95    0.000012           3         4           mprotect
+  9.30    0.000008           8         1         1 access
+  8.14    0.000007           2         4           fstat
+  6.98    0.000006           6         1           execve
+  4.65    0.000004           2         2           read
+  4.65    0.000004           4         1           brk
+  3.49    0.000003           2         2           close
+  0.00    0.000000           0         9           write
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000086                    37         1 total
+
+To test the system calls of unbuffered, with terminal output:
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c ./u a b <kant.pdf
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.83   13.461470           1  10220085           write
+ 42.17    9.817701           1  10220087           read
+  0.00    0.000039           6         7           mmap
+  0.00    0.000025           6         4           mprotect
+  0.00    0.000015           8         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000008           4         2           close
+  0.00    0.000008           8         1         1 access
+  0.00    0.000007           7         1           execve
+  0.00    0.000006           3         2           fstat
+  0.00    0.000005           5         1           brk
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   23.279297              20440194         1 total
+
+In conclusion, we found that # of function calls needed for buffered is significantly less than unbuffered. Also, it takes more steps to write on the terminal. 
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time ./b a b <kant.pdf>boutput.txt
+
+real	0m0.004s
+user	0m0.000s
+sys	0m0.002s
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time ./u a b <kant.pdf>uoutput.txt
+
+real	0m12.793s
+user	0m0.513s
+sys	0m12.163s
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time ./b a b <kant.pdf
+
+real	0m0.002s
+user	0m0.000s
+sys	0m0.001s
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time ./u a b <kant.pdf
+real	0m11.336s
+user	0m0.534s
+sys	0m10.738s
+
+In conclusion, I found that it takes less time for buffered than unbuffered; also, the time for outputing to a file is less than the time writing on the terminal. 

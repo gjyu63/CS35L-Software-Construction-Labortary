@@ -1,0 +1,108 @@
+Lab1
+1. man man
+then want to know how to search in man page
+use ‘pattern
+then search how to search man page
+man -k pattern
+2.which cp
+which  wc
+
+3.
+man find
+
+find /usr/bin -executable -name ?
+
+4. man -k symbolic
+to find 
+
+so
+readlink /usr/bin/emacs
+we get
+/etc/alternatives/emacs
+
+5. g+s set other user ID on execution
+o-x remove the permission to execute for others
+
+6. man find
+find -mtime -21
+- (minus) means less than
+7.
+man find
+find -type d -mtime -20
+
+8.
+which find
+to find the working directory 
+man find
+find /usr/bin -type l 
+
+9.
+find /usr/lib -mtime -10000000000000000000000000000000000
+try to find the oldest file but filed
+
+man ls
+
+ls /usr/lib -l -t
+
+drwxr-xr-x.  2 root root    4096 Jul  2  2015 jvm-commmon
+
+10.
+man locale
+/usr/lib/locale/locale-archive
+              Usual default locale archive location.
+
+       /usr/share/i18n/locales
+
+              Usual default path for locale definition files.
+
+11.
+
+emacs a.gj
+Buffer-menu-sort              M-x ... RET
+   Sort Tabulated List entries by the column at point.
+sort-columns                  M-x ... RET
+   Sort lines in region alphabetically by a certain range of columns.
+sort-fields                   M-x ... RET
+   Sort lines in region lexicographically by the ARGth field of each
+   line.
+sort-lines                    M-x ... RET
+   Sort lines in region alphabetically; argument means descending
+   order.
+sort-numeric-fields           M-x ... RET
+   Sort lines in region numerically by the ARGth field of each line.
+sort-pages                    M-x ... RET
+   Sort pages in region alphabetically; argument means descending
+   order.
+sort-paragraphs               M-x ... RET
+   Sort paragraphs in region alphabetically; argument means descending
+   order.
+sort-regexp-fields            M-x ... RET
+   Sort the text in the region region lexicographically.
+tabulated-list-col-sort       M-x ... RET
+   Sort Tabulated List entries by the column of the mouse click E.
+tabulated-list-sort           M-x ... RET
+   Sort Tabulated List entries by the column at point.
+
+12.C-h-k keystroke
+13 same
+
+14. C-h f
+
+15.C-x d delete “~/“ /usr/bin
+
+C-x d Backspace Backspace /usr/bincd /usr/binls -lafter comparing the following is not list in ls -l commanddr-xr-xr-x.   2 root root       81920 Dec  7 09:09 .drwxr-xr-x.  16 root root        4096 Dec  5 14:21 ..
+
+
+
+exer1
+
+C-s PUBLIC ENTER
+C-s Laboratory C-s ENTER
+1.6 C-b
+1.7 C-a
+1.8 C-v
+
+2.2 M-g g 18 C-k
+2.3 C-s DELETE ME C-a C-k
+2.4 C-s https://en.wikipedia.org/wiki/HTML_comment#CommentsC-aarrow forward C-karrow downC-k
+

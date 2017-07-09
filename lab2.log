@@ -1,0 +1,261 @@
+Jiayu Guo
+CS35L W17 Lab2
+lab2.log
+1. 
+$ export LC_ALL= ‘C’ to make sure that the locale settings are correct. 
+
+2.
+$ sort -u /usr/share/dict/words > words
+
+to get English words sorting done (also removed duplicates)
+
+3.
+a.
+tr -c 'A-Za-z' '[\n*]' < assign2.html
+everything that is not belongs to a English character will 
+be replaced by a empty line
+
+b.
+tr -cs 'A-Za-z' '[\n*]' <assign2.html
+Compared to the last one it has been changed into one line per word.
+
+c.
+tr -cs 'A-Za-z' '[\n*]' | sort<assign2.html
+the file has been sorted with the starting character of each word
+
+d.
+tr -cs 'A-Za-z' '[\n*]' | sort -u<assign2.html
+also sorted, but only one instance of the word will be shown
+
+e.
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words<assign2.html
+it shows the words uniquely in assign2.html,
+ uniquely in “words”, and both, separately.
+
+f.
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words<assign2.html
+it lists the words uniquely appears in assign2.html rather than “words”
+
+/* ————buildwords——*/
+
+#!/bin/sh
+
+#have everything inside td
+
+grep "<td>.*</td>"|
+
+#remove html tags
+
+sed 's/<[^>]*>//g'|
+
+#remove white spaces
+
+sed '/^\s*$/d'|
+
+#select Hawaiian from English-Hawaiian mix by select only even lines
+
+awk 'NR % 2 == 0'|
+
+#remove blank lines
+
+sed '/^\n$/d'|
+
+#remove white spaces
+
+sed 's/^\s*//g'|
+
+#convert upper cases to lower
+
+tr '[:upper:]' '[:lower:]'|
+
+#convert ‘okina to apostrophe
+
+sed "s/\`/'/g"|
+
+#replace comma with new line character
+
+sed 's/\,/\n/g'|
+
+#replace whitespace with \n
+
+tr ' ' '\n'|
+
+#remove leading blank
+
+sed 's/^\s*//g'|
+
+#remove lines with undefined characters
+
+sed "/[^p^k^'^m^n^w^l^h^a^e^i^o^u]/d" |
+
+#sort and remove duplicates
+
+sort -u|
+
+#remove the first line,
+
+awk "NR != 1"
+
+ 
+/*———end of buildwords———*/
+
+to get the webpages,
+
+$ wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/assign2.html
+$ wget http://mauimapp.com/moolelo/hwnwdseng.htm
+
+then,
+
+$ ./buildwords < hwnwdseng.htm > hwords
+
+to build a dictionary
+
+Now we are able to use it for spell check. 
+
+To find out how many words are misspelled in English, 
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr '[:upper:]' '[:lower:]' 
+| sort -u | comm -23 - words | wc -w
+
+we get 38 misspelled English words
+
+To find misspelled Hawiian,
+
+cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]' '[:lower:]' 
+| sort -u | comm -23 - hwords | wc -w
+
+the answer is 199
+
+Then, to figure out the words that misspelled in English rather than Hawiian,
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr '[:upper:]' '[:lower:]' 
+| sort -u | comm -23 - words | tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -12 - hwords
+
+//technically it just put misspelled English into Hawiian checker
+
+We got,
+
+e
+halau
+i
+lau
+po
+wiki
+
+
+Then, misspelled Hawiian but correct English,
+
+cat assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | tr '[:upper:]' '[:lower:]' | sort -u | comm -23 - hwords | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -12 - words
+
+I’ve got
+
+a
+ail
+ain
+ake
+al
+ale
+alen
+all
+amine
+amp
+ample
+an
+aph
+aul
+awk
+e
+ea
+ee
+el
+em
+emp
+en
+ep
+epa
+h
+ha
+han
+hap
+he
+hei
+hell
+hem
+hen
+hi
+hin
+ho
+how
+howe
+ia
+ie
+ile
+imp
+in
+ion
+iou
+k
+keep
+kin
+l
+lan
+le
+lea
+li
+like
+line
+link
+ll
+ln
+lo
+lowe
+m
+mail
+man
+me
+men
+mi
+ml
+mo
+mp
+n
+name
+ne
+nee
+no
+non
+nu
+num
+o
+om
+on
+one
+op
+ope
+open
+owe
+own
+p
+pe
+pell
+people
+plea
+pu
+u
+ui
+ula
+ule
+ume
+ump
+un
+uni
+w
+wa
+wan
+we
+wh
+wha
+who
+wi
+wo
+

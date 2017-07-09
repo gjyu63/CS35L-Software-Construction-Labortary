@@ -1,0 +1,117 @@
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrob
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 22.83    0.000029           3         9           mmap
+ 15.75    0.000020           5         4           fstat
+ 13.39    0.000017           4         4           mprotect
+ 12.60    0.000016           5         3           open
+ 11.02    0.000014           7         2           munmap
+  5.51    0.000007           2         4           brk
+  4.72    0.000006           6         1           write
+  4.72    0.000006           1         5           close
+  3.94    0.000005           5         1         1 access
+  3.15    0.000004           4         1           execve
+  1.57    0.000002           2         1           read
+  0.79    0.000001           1         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000127                    36         1 total
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c printf '*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4' | ./sfrobu
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 26.52    0.000035           4         9           mmap
+ 21.97    0.000029          10         3           open
+ 13.64    0.000018           5         4           mprotect
+ 10.61    0.000014           7         2           munmap
+  4.55    0.000006           6         1           write
+  4.55    0.000006           1         5           close
+  4.55    0.000006           2         4           fstat
+  4.55    0.000006           2         4           brk
+  3.79    0.000005           5         1         1 access
+  3.03    0.000004           4         1           execve
+  1.52    0.000002           2         1           read
+  0.76    0.000001           1         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000132                    36         1 total
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ strace -c printf /usr/local/cs/jdk*/jre/lib/rt.jar | ./sfrob
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 26.61    0.000029           3         9           mmap
+ 15.60    0.000017           4         4           mprotect
+ 13.76    0.000015           5         3           open
+ 11.93    0.000013           7         2           munmap
+  6.42    0.000007           1         5           close
+  5.50    0.000006           2         4           fstat
+  5.50    0.000006           2         4           brk
+  4.59    0.000005           5         1           write
+  4.59    0.000005           5         1         1 access
+  3.67    0.000004           4         1           execve
+  0.92    0.000001           1         1           read
+  0.92    0.000001           1         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000109                    36         1 total
+
+/usr/local/cs/jdk1.8.0_112/jre/lib/rt.jar [guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ s/rt.jar | ./sfrobu
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 27.59    0.000032           4         9           mmap
+ 17.24    0.000020           5         4           mprotect
+ 12.93    0.000015           5         3           open
+ 11.21    0.000013           7         2           munmap
+  6.03    0.000007           2         4           fstat
+  5.17    0.000006           6         1           write
+  5.17    0.000006           1         5           close
+  4.31    0.000005           1         4           brk
+  4.31    0.000005           5         1         1 access
+  3.45    0.000004           4         1           execve
+  1.72    0.000002           2         1           read
+  0.86    0.000001           1         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000116                    36         1 total
+
+I also ran sfrobu with a variety of file size input, from 10 lines to 100000 lines
+
+Lines		Comparisons
+10		35
+100		7561
+1000		159233
+10000		2998123
+100000		30096373
+
+I found that the best model to describe this would not be linear since when the line # increased by 10, the # of comparisons increased more than 10. I believe the appropriate 
+model for this one is k*nlogn, or O(nlogn)
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time cat kant.pdf | ./sfrobu
+
+real	0m11.823s
+user	0m0.809s
+sys	0m11.015s
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time cat kant.pdf | ./sfrob
+
+real	0m0.004s
+user	0m0.001s
+sys	0m0.002s
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time cat kant.pdf | ./sfrobs
+
+real	0m0.826s
+user	0m0.095s
+sys	0m0.180s
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time cat kant.pdf | ./sfrobu -f
+
+real	0m11.251s
+user	0m0.899s
+sys	0m10.356s
+
+
+[guoj@lnxsrv07 ~/Desktop/cs35l/wk5]$ time cat kant.pdf | ./sfrobs -f
+real	0m0.829s
+user	0m0.097s
+sys	0m0.186s
+
+we found that unbuffered takes more time than buffered; also, ignoring cases would save time significantly. 

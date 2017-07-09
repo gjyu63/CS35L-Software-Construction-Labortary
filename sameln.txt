@@ -1,0 +1,70 @@
+#!/bin/dash
+
+IFS=$'\n'   #set the internal field separator to guide how to separate
+dir=$1      #load the parameter
+
+FILELIST=‘ls -a $dir | sort’  #get the list of the file
+
+declare -a ARRAY    # just hold…file names
+
+let fileCount=0
+
+for FILE in $FILELIST
+do
+    if [ ! -d "$dir/$FILE" ] && [ ! -L "$dir/$FILE" ]
+    then                           
+	if [ ! -r "$dir/$FILE" ]      #if not readable
+	then                           
+	    echo “cannot read this. please give up“
+	    continue
+	fi
+	if [ -f "$dir/$FILE" ]   #it’s a good one
+	then                                           
+	    if [ ${FILE:0:1} == '.'  ]
+	    then             # if it is a hidden file, put into the array
+		ARRAY[$fileCount1]="$dir/$FILE"    
+		let fileCount1=fileCount1+1
+	    fi
+	fi
+done
+
+
+for FILE in $FILELIST
+do
+    if [ ! -d "$dir/$FILE" ] && [ ! -L "$dir/$FILE" ]
+    then                           
+	if [ ! -r "$dir/$FILE" ]      #if not readable
+	then                           
+	    echo “cannot read this. please give up“
+	    continue
+	fi
+	if [ -f "$dir/$FILE" ]   #it’s a good one
+	then                                           
+	    if [ ${FILE:0:1} != '.'  ]
+	    then             # if it is NOT a hidden file, put into the array
+		ARRAY[$fileCount]="$dir/$FILE"    
+		let fileCount=fileCount+1
+	    fi
+	fi
+done
+
+
+for I in "${ARRAY[@]}"
+do
+    for J in "${ARRAY[@]}"
+    do
+	
+	if [ $I != $J ]
+	   then
+	       cmp -s $I $J //compare if they are the same stuff
+	       let rr=$?
+	       #If files are same
+	       if [ $rr == 0 ]
+	       then
+		   rm $J  #rm the duplicate
+		   ln $I $J #cr8 link
+		fi
+
+	fi
+    done
+done

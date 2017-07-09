@@ -1,0 +1,27 @@
+2017-02-09  Jiayu Guo  <guoj@lnxsrv07.seas.ucla.edu>
+
+	* timespec_new.h: Since substraction of tv_sec may cause intger overflow problem, we used comparsion instead of this.
+
+--- lib/timespec.h	2017-02-09 20:35:33.961945000 -0800
++++ timespec_new.h	2017-02-09 21:06:39.534935000 -0800
+@@ -42,13 +42,15 @@
+ 
+ /* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+    Assume the nanosecond components are in range, or close to it.  */
+-static inline int
+-timespec_cmp (struct timespec a, struct timespec b)
++static inline int timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff : a.tv_nsec - b.tv_nsec;
++	int diff;
++	if(a.tv_sec>b.tv_sec)
++		diff = 1;
++	else 
++		diff = 0;
++	return diff ? diff : a.tv_nsec - b.tv_nsec;
+ }
+-
+ # if ! HAVE_DECL_NANOSLEEP
+ /* Don't specify a prototype here.  Some systems (e.g., OSF) declare
+    nanosleep with a conflicting one (const-less first parameter).  */

@@ -1,0 +1,318 @@
+Lab4
+Jiayu Guo
+304-773-262
+
+
+To download and unzip lab materials
+
+
+$ wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/coreutils-with-bug.tar.gz
+$ tar -xzf coreutils-with-bug.tar.gz 
+
+
+To build the lab material
+
+
+./configure
+
+
+To make file
+
+
+$ make
+
+
+During make the program showed errors below:
+
+
+“In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^~~~~~~~
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;”
+            ^~~~~~~~
+
+
+So we will want to use the given patch to fix this problem
+
+
+(at cor….folder)  $ patch -p0 < coreutils.diff
+ 
+Then configure and build again:
+
+
+$ ./configure --prefix='/u/cs/ugrad/guoj/Desktop/cs35l/wk4/coreutils-with-bug'
+$ make
+$ make install
+
+
+To reproduce the problem
+COMMAND:
+$ tmp=$(mktemp -d)
+$ cd $tmp
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 ~/Desktop/cs35l/wk4/coreutils-with-bug/bin/ls  
+-lt --full-time wwi-armistice now now1
+
+
+And the output is
+
+
+-rw-r--r-- 1 guoj csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 04:23:52.022946285 +0000 now1
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 04:23:40.558639321 +0000 now
+
+
+
+
+There’s some bugs on time ordering
+I was trying to find the bug by looking source code in the /src folder.
+
+
+Then I looked into the source code ls.c
+
+
+It must be relevant with sorting stuff. 
+
+
+I found that the function sort_files and cmp_mtime are ‘suspicious’ because they are relevant to file list time sorting. So I put breakpoints on these. 
+(Note: Actually after moving around in gdb, I found that the deepest function called is timespec_cmp )
+
+
+$ gdb ~/Desktop/cs35l/wk4/coreutils-with-bug/src/ls
+
+
+(gdb) break sort_files
+(gdb) break cmp_mtime
+
+
+To run it, 
+
+
+(gdb) r -lt --full-time wwi-armistice now now1
+
+
+I used the log feature in gdb to save logs into a file
+
+
+        (gdb) set log on
+
+
+Breakpoint 1, sort_files () at ls.c:2954
+2954        {
+(gdb) s
+2962          if (! setjmp (failed_strcoll))
+(gdb) s
+2964              switch (sort_type)
+(gdb) s
+2969                  switch (time_type)
+(gdb) s
+2975                      func = sort_reverse ? rev_cmp_mtime : compare_mtime;
+(gdb) s
+3034          qsort (files, files_index, sizeof *files, func);
+(gdb) s
+
+
+2884        static int compare_mtime (V a, V b) 
+{ return cmp_mtime (a, b, xstrcoll); }
+(gdb) s
+cmp_mtime (cmp=0x404530 <xstrcoll>, b=0x6180f0, a=0x618040) at ls.c:2884
+2884        static int compare_mtime (V a, V b)
+ { return cmp_mtime (a, b, xstrcoll); }
+(gdb) s
+timespec_cmp (b=..., a=...) at ../lib/timespec.h:48
+48          int diff = a.tv_sec - b.tv_sec;
+(gdb) list
+43        /* Return negative, zero, positive if A < B,
+ A == B, A > B, respectively.
+44           Assume the nanosecond components are in range, or close to it.  */
+45        static inline int
+46        timespec_cmp (struct timespec a, struct timespec b)
+47        {
+48          int diff = a.tv_sec - b.tv_sec;
+49          return diff ? diff : a.tv_nsec - b.tv_nsec;
+50        }
+51        
+52        # if ! HAVE_DECL_NANOSLEEP
+(gdb) s
+49          return diff ? diff : a.tv_nsec - b.tv_nsec;
+(gdb) info locals
+diff = 12
+
+
+(second loop)
+
+
+(gdb) s
+compare_mtime (a=0x617180, b=0x617230) at ls.c:2884
+2884        static int compare_mtime (V a, V b) 
+{ return cmp_mtime (a, b, xstrcoll); }
+(gdb) s
+0x00007ffff7a53ab3 in msort_with_tmp.part () from /lib64/libc.so.6
+(gdb) s
+Single stepping until exit from function msort_with_tmp.part.0,
+which has no line number information.
+0x00007ffff7aaa8d0 in __memcpy_sse2 () from /lib64/libc.so.6
+(gdb) s
+Single stepping until exit from function __memcpy_sse2,
+which has no line number information.
+0x00007ffff7a53a28 in msort_with_tmp.part () from /lib64/libc.so.6
+(gdb) list
+2879        {
+2880          int diff = timespec_cmp (get_stat_mtime (&b->stat),
+2881                                   get_stat_mtime (&a->stat));
+2882          return diff ? diff : cmp (a->name, b->name);
+2883        }
+2884        static int compare_mtime (V a, V b)
+ { return cmp_mtime (a, b, xstrcoll); }
+2885        static int compstr_mtime (V a, V b)
+ { return cmp_mtime (a, b, strcmp); }
+2886        static int rev_cmp_mtime (V a, V b) 
+{ return compare_mtime (b, a); }
+2887        static int rev_str_mtime (V a, V b) 
+{ return compstr_mtime (b, a); }
+2888        
+(gdb) s
+Single stepping until exit from function msort_with_tmp.part.0,
+which has no line number information.
+
+
+Breakpoint 2, compare_mtime (a=0x6170d0, b=0x617230) at ls.c:2884
+2884        static int compare_mtime (V a, V b) 
+{ return cmp_mtime (a, b, xstrcoll); }
+(gdb) s
+cmp_mtime (cmp=0x404530 <xstrcoll>, b=0x617230, a=0x6170d0) at ls.c:2884
+2884        static int compare_mtime (V a, V b) 
+{ return cmp_mtime (a, b, xstrcoll); }
+(gdb) s
+timespec_cmp (b=..., a=...) at ../lib/timespec.h:48
+48          int diff = a.tv_sec - b.tv_sec;
+(gdb) s
+49          return diff ? diff : a.tv_nsec - b.tv_nsec;
+
+
+(gdb) info locals
+
+
+We get 
+diff = -1194440664
+
+
+
+
+During the first loop the diff is a reasonable number; 
+but in the second loop run there’s a very “negative number”. 
+This suggest that there’s an integer overflow problem caused by
+ the difference of two nano seconds. An intuitive idea is 
+to avoid subtraction, use comparison. 
+
+
+Fix bug:
+
+
+Copy and paste timespec.h
+
+
+go to line 48 of timespec_new.h 
+
+
+Update to the new version
+
+
+static inline int timespec_cmp (struct timespec a, struct timespec b)
+{
+        int diff;
+        if(a.tv_sec>b.tv_sec)
+                diff = 1;
+        else 
+diff = 0;
+        return diff ? diff : a.tv_nsec - b.tv_nsec;
+}
+
+
+
+
+To make patch
+
+
+$ diff -u timespec_new.h lib/timespec.h > patch.diff
+
+
+We also need to update ChangeLog
+
+
+In emacs, C-x-4-a
+
+
+I wrote down some famous life quotes (actually some description of ‘what did I do’)
+
+
+$ cp ChangeLog lab4.diff
+$ cat patch.diff >> lab4.diff
+$patch -p0 < lab4.diff
+
+
+/******************************/
+To test the patched program
+
+
+$ make
+
+
+[guoj@lnxsrv07 ~/wk4/coreutils-with-bug]$ tmp=$(mktemp -d)
+[guoj@lnxsrv07 ~/wk4/coreutils-with-bug]$ cd $tmp
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ cd $tmp
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ touch -d '1918-11-11 11:00 GMT' 
+wwi-armistice
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ touch now
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ sleep 1
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ touch now1
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ TZ=UTC0 ~/wk4/coreutils-with-bug/src/ls 
+-lt --full-time wwi-armistice now now1
+
+
+
+
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 05:25:45.890402535 +0000 now1
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 05:25:33.545071896 +0000 now
+-rw-r--r-- 1 guoj csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+
+It turns out that this one works properly. yeeeeee!
+
+
+The last part of the lab is to see what does ls in SEAS supercomputers act like
+
+
+[guoj@lnxsrv07 /tmp/tmp.wGKr9bpL59]$ cd ~
+[guoj@lnxsrv07 ~]$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+[guoj@lnxsrv07 ~]$ touch now
+[guoj@lnxsrv07 ~]$ sleep 1
+[guoj@lnxsrv07 ~]$ touch now1
+[guoj@lnxsrv07 ~]$ TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+
+
+-rw-r--r-- 1 guoj csugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 05:33:43.016644000 +0000 now1
+-rw-r--r-- 1 guoj csugrad 0 2017-02-10 05:33:32.894716000 +0000 now
+
+
+I’ve got decent programmer’s manner. I searched for google. Courtesy to 
+
+
+http://unix.stackexchange.com/questions/25361/why-does-unix-store-timestamps-in-a-signed-integer
+
+
+
+
+I’ve learned that unix use sign bit to represent whether the time is before (-)
+ or after (+) 1970 (when the universe is created). I believe it’s because SEAS 
+computers are 64-bit and Network File System is 32-bit. When a 64-bit time is 
+converted to 32-bit, the sign bit got lost and it ‘forget’ the time is ‘ancient’.
+ So a strange future time is shown.
